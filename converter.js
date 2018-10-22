@@ -1,5 +1,3 @@
-var zip = new JSZip();
-
 document.getElementById("file").onchange = function(ev) {
     var files = ev.target.files;
 
@@ -26,7 +24,7 @@ function handleFile(file) {
                 }).then(JSON.stringify)
                 .then(file => {
                     archive.file("project.json", file);
-                    return zip.generateAsync({type: "blob"});
+                    return archive.generateAsync({type: "blob"});
                 });
         }).then(blob => {
             saveAs(blob, file.name.replace(".sbx", ".converted.sbx"));
