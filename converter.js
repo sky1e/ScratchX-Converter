@@ -28,6 +28,8 @@ function handleFile(file) {
                 });
         }).then(blob => {
             saveAs(blob, file.name.replace(".sbx", ".converted.sbx"));
+        }).catch(() => {
+            alert("Something went wrong with converting " + file.name + ". Are you sure this is a \".sbx\" project file saved from ScratchX?");
         });
 }
 
