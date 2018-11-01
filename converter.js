@@ -1,5 +1,5 @@
-document.getElementById("file").onchange = function (ev) {
-    var files = ev.target.files;
+document.getElementById("convert").onclick = function (ev) {
+    var files = document.getElementById("file").files;
 
     for (let i = 0; i < files.length; i++) {
         handleFile(files[i]);
@@ -14,7 +14,6 @@ function handleFile(file) {
             let project = archive.file("project.json");
             return project.async("text").then(JSON.parse)
                 .then(object => {
-                    console.log(object);
                     if (object.scripts) {
                         fixScripts(object.scripts);
                     }
@@ -31,11 +30,14 @@ function handleFile(file) {
                 .then(file => {
                     archive.file("project.json", file);
                     return archive.generateAsync({ type: "blob" });
+                }).catch(reason => {
+                    alert("Something went wrong with converting " + file.name + ".");
                 });
         }).then(blob => {
-            saveAs(blob, file.name.replace(".sbx", ".converted.sbx"));
+            if (blob)
+                saveAs(blob, file.name.replace(".sbx", ".converted.sbx"));
         }).catch(() => {
-            alert("Something went wrong with converting " + file.name + ". Are you sure this is a \".sbx\" project file saved from ScratchX?");
+            alert("Something went wrong with parsing " + file.name + ". Are you sure this is a \".sbx\" project file saved from ScratchX?");
         });
 }
 
@@ -63,14 +65,12 @@ function fixBlock(block) {
 }
 
 function fixExtension(extension) {
-    if (extension.javascriptURL === "http://birdbraintechnologies.github.io/Chrome-Scratch-and-Snap-Support/Scratch Plugins/HummingbirdHID_Scratch(Chrome Plugin)/v0.7.2.js"
-        || extension.javascriptURL === "http://birdbraintechnologies.github.io/Chrome-Scratch-and-Snap-Support/Scratch Plugins/HummingbirdHID_Scratch(Chrome Plugin)/v0.7.2.js") {
+    if (new RegExp("https?://birdbraintechnologies\\.github\\.io/Chrome-Scratch-and-Snap-Support/Scratch( |%20)Plugins/HummingbirdHID_Scratch\\(Chrome( |%20)Plugin\\)(/v0\\.7\\.2)?\\.js").test(extension.javascriptURL)) {
         extension.javascriptURL = "http://birdbraintechnologies.github.io/Chrome-Scratch-and-Snap-Support/Scratch Plugins/HummingbirdHID_Scratch(Chrome Plugin)/v1.0.js";
         extension.blockSpecs[8][2] = "getRotary";
         extension.blockSpecs[9][2] = "getLight";
     }
-    if (extension.javascriptURL === "http://birdbraintechnologies.github.io/Chrome-Scratch-and-Snap-Support/Scratch Plugins/FinchHID_Scratch(Chrome Plugin).js"
-        || extension.javascriptURL === "http://birdbraintechnologies.github.io/Chrome-Scratch-and-Snap-Support/Scratch Plugins/FinchHID_Scratch(Chrome Plugin)/v0.7.5.js") {
+    if (new RegExp("https?://birdbraintechnologies\\.github\\.io/Chrome-Scratch-and-Snap-Support/Scratch( |%20)Plugins/FinchHID_Scratch\\(Chrome( |%20)Plugin\\)(/v0\\.7\\.5)?\\.js").test(extension.javascriptURL)) {
         extension.javascriptURL = "http://birdbraintechnologies.github.io/Chrome-Scratch-and-Snap-Support/Scratch Plugins/FinchHID_Scratch(Chrome Plugin)/v1.0.js";
     }
 
@@ -78,6 +78,4 @@ function fixExtension(extension) {
         extension.blockSpecs[4][0] = 'b';   // convert the obstacle blocks into booleans
         extension.blockSpecs[5][0] = 'b';
     }
-
-    console.log(extension);
 }
